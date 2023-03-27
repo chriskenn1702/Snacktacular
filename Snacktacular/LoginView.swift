@@ -18,14 +18,16 @@ struct LoginView: View {
     @State private var showingAlert = false
     @State private var alertMessage = ""
     @State private var buttonDisable = true
+    @State private var path = NavigationPath()
     @FocusState private var focusField: Field?
     
     var body: some View {
-        NavigationStack{
+        NavigationStack (path: $path){
             Image("logo")
                 .resizable()
                 .scaledToFit()
                 .padding()
+            
             Group{
                 TextField("E-Mail", text: $email)
                     .keyboardType(.emailAddress)
@@ -51,7 +53,6 @@ struct LoginView: View {
                         enableButtons()
                     }
             }
-            .disabled(buttonDisable)
             .textFieldStyle(.roundedBorder)
             .overlay {
                 RoundedRectangle(cornerRadius: 5)
@@ -66,22 +67,34 @@ struct LoginView: View {
                     Text("Sign Up")
                 }
                 .padding(.trailing)
+                
                 Button {
                     login()
                 } label: {
                     Text("Log In")
                 }
                 .padding(.leading)
-
             }
+            .disabled(buttonDisable)
             .buttonStyle(.borderedProminent)
             .tint(Color("SnackColor"))
             .font(.title2)
             .padding(.top)
             .navigationBarTitleDisplayMode(.inline)
+            .navigationDestination(for: String.self) { view in
+                if view == "ListView"{
+                    ListView()
+                }
+            }
         }
         .alert(alertMessage, isPresented: $showingAlert) {
             Button("OK", role: .cancel) {}
+        }
+        .onAppear{
+            if Auth.auth().currentUser != nil{
+                print("🪵 Login success!")
+                path.append("ListView")
+            }
         }
     }
     
@@ -100,6 +113,7 @@ struct LoginView: View {
                 showingAlert = true
             } else{
                 print("😎 Registration success!")
+                path.append("ListView")
             }
         }
     }
@@ -112,6 +126,7 @@ struct LoginView: View {
                 showingAlert = true
             } else{
                 print("🪵 Login success!")
+                path.append("ListView")
             }
         }
     }
